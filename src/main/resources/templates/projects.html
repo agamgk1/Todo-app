@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App: projects</title>
+    <link rel="stylesheet" href="https://igoradamenko.github.io/awsm.css/css/awsm.min.css">
+    <style>
+        .Bd {
+            border: solid 1px black;
+        }
+        .P\(0\) {
+            padding: 0;
+        }
+        .P\(10\) {
+            padding: 10px;
+        }
+        .C\(red\) {
+            color: red;
+        }
+        .Bdc\(red\) {
+            border-color: red !important;
+        }
+    </style>
+</head>
+<body>
+<main>
+    <!-- th:if wskazuje kiedy ma sie pojawic dany znacznik -->
+    <h1 th:if="${message != null}" th:text="${message}"></h1>
+    <!-- kazdy projekt bedzie wyswietlany w liscie-->
+    <!--/*@thymesVar id="projects" type="java.util.List<io.github.agamgk1.model.Project>"*/-->
+    <dl th:each="project : ${projects}" class="Bd P(10)">
+        <dt th:text="${project.description}">...</dt>
+        <dd>
+            <ul class="P(0)">
+                <li th:each="step : ${project.projectSteps}" th:text="|${step.description} (${step.daysToDeadline} dni)|"> </li>
+            </ul>
+            <form action="#" method="post" th:action="@{/projects/{projectId}(projectId=${project.id})}">
+                <label> Deadline
+                <input name="deadline" type="datetime-local" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}">
+                </label>
+                <button type="submit">Utwórz taski >></button>
+            </form>
+        </dd>
+    </dl>
+    <!-- adresy url w thymeleaf oznacza sie @. Odwołania do opiektu wyrazenia do ktorych chcemy sie odwołać + trzeba zdefiniowac te wyrazenie w specjalnym komentarzu $-->
+    <!--/*@thymesVar id="project" type="io.github.agamgk1.model.projection.ProjectWriteModel"*/-->
+    <form action="#" method="post"  th:action="@{/projects}" th:object="${project}">
+    <fieldset>
+        <legend>Nowy projekt</legend>
+        <p class="C(red) Bdc(red)" th:if="${#fields.hasAnyErrors()}" th:errors="*{all}"></p>
+        <label>Opis
+            <input type="text" th:field="${project.description}" th:errorclass="'Bdc(red)'"/>
+        </label>
+        <!-- th:each włączy iteracje (powielanie kolejnych elementó) tyle razy ile jest project.steps powstanie fieldset zeby liczby kroków sie dyn zmieniały -->
+        <!-- statytyki to nazwa zmiennej +Stat-->
+        <fieldset th:each="step, stepStat : ${project.steps}">
+            <legend th:text="'Krok ' + ${stepStat.index+1}"></legend>
+            <label>Opis
+                <!-- wyrazenie w wyrazeniu poprzedzone i zak podłogami-->
+                <input type="text" th:field="${project.steps[__${stepStat.index}__].description}" th:errorclass="'Bdc(red)'"/>
+            </label>
+            <label>Dni do końca projektu
+                <input type="number" th:field="${project.steps[__${stepStat.index}__].daysToDeadline}" th:errorclass="'Bdc(red)'"/>
+            </label>
+        </fieldset>
+        <div>
+            <!-- name pozwoli nam obsłuzyc ten wprzycisk w klasie javy-->
+            <button type="submit" name="addStep">+</button>
+        </div>
+    </fieldset>
+        <p>
+            <button type="submit">Dodaj</button>
+            <button type="reset">Wyczyść</button>
+        </p>
+    </form>
+</main>
+</body>
+</html>
